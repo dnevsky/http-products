@@ -32,9 +32,13 @@ POSTGRES_PASSWORD=qwerty
 ## `Makefile`:
 
 `make postgre` - поднять базу данных Postgres в Docker.
+
 `make redis` - поднять Redis в Docker.
+
 `make create-migrate` - создать файлы миграции. Перед использованием нужно указать название миграции.
+
 `make migrate` - применить миграцию.
+
 `make shutdown` - завершение всех запущенных приложений.
 
 ## Комментарии:
