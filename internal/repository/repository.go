@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"context"
+
 	"github.com/dnevsky/http-products/internal/repository/postgres"
 	"github.com/dnevsky/http-products/models"
 	"github.com/jmoiron/sqlx"
@@ -8,7 +10,7 @@ import (
 )
 
 type Product interface {
-	GetAll() ([]models.Product, error)
+	GetAll(ctx context.Context) ([]models.Product, error)
 	GetAllWithOffset(limit, offset int) ([]models.Product, error)
 }
 

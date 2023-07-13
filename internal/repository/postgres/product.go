@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/dnevsky/http-products/models"
@@ -35,14 +36,12 @@ func (r *ProductPostgres) GetAllWithOffset(limit, offset int) ([]models.Product,
 	return products, nil
 }
 
-func (r *ProductPostgres) GetAll() ([]models.Product, error) {
-	// Не стал заранее выделять память под products. Мы не знаем сколько у нас записей в БД, может их 1 млн, может их 10 млн. А вдруг их там 10?
-	// Ну и не сильно быстрее стала программа работать когда я сразу миллион выделил.
+func (r *ProductPostgres) GetAll(ctx context.Context) ([]models.Product, error) {
 	var products []models.Product
 
 	query := fmt.Sprintf("SELECT * FROM %s ORDER BY id ASC", productsTable)
 
-	if err := r.db.Select(&products, query); err != nil {
+	if err := r.db.SelectContext(ctx, &products, query); err != nil {
 		return nil, err
 	}
 

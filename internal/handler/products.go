@@ -33,7 +33,7 @@ func (h *Handler) getAll(c *gin.Context) {
 		return
 	}
 
-	products, err := h.services.Product.GetAll(limit, offset)
+	products, err := h.services.Product.GetAll(c, limit, offset)
 	if err != nil {
 		h.logger.Infow("error while get all products",
 			"products", products, "error", err.Error(),

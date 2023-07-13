@@ -18,10 +18,10 @@ func NewProductRedis(logger *zap.SugaredLogger, client *redis.Client) *ProductRe
 	return &ProductRedis{logger: logger, client: client}
 }
 
-func (c *ProductRedis) GetWithOffsetFromJSON(limit, offset int) ([]models.Product, error) {
+func (c *ProductRedis) GetWithOffsetFromJSON(ctx context.Context, limit, offset int) ([]models.Product, error) {
 	products := make([]models.Product, 0, limit)
 
-	res, err := c.client.LRange(context.Background(), "products", int64(offset), int64(offset+limit)).Result()
+	res, err := c.client.LRange(ctx, "products", int64(offset), int64(offset+limit)).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -40,22 +40,22 @@ func (c *ProductRedis) GetWithOffsetFromJSON(limit, offset int) ([]models.Produc
 	return products, nil
 }
 
-func (c *ProductRedis) UpdateData(data *[]string) error {
+func (c *ProductRedis) UpdateData(ctx context.Context, data []string) error {
 
 	pipe := c.client.TxPipeline()
 	defer pipe.Close()
 
-	err := pipe.Del(context.Background(), "products").Err()
+	err := pipe.Del(ctx, "products").Err()
 	if err != nil {
 		return err
 	}
 
-	err = pipe.RPush(context.Background(), "products", *data).Err()
+	err = pipe.RPush(ctx, "products", data).Err()
 	if err != nil {
 		return err
 	}
 
-	_, err = pipe.Exec(context.Background())
+	_, err = pipe.Exec(ctx)
 	if err != nil {
 		return err
 	}

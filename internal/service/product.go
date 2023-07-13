@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+
 	"github.com/dnevsky/http-products/cache"
 	"github.com/dnevsky/http-products/models"
 	"go.uber.org/zap"
@@ -15,8 +17,8 @@ func NewProductService(logger *zap.SugaredLogger, cache *cache.Cache) *ProductSe
 	return &ProductService{logger: logger, cache: cache}
 }
 
-func (s *ProductService) GetAll(limit, offset int) ([]models.Product, error) {
-	products, err := s.cache.Product.GetWithOffsetFromJSON(limit, offset)
+func (s *ProductService) GetAll(ctx context.Context, limit, offset int) ([]models.Product, error) {
+	products, err := s.cache.Product.GetWithOffsetFromJSON(ctx, limit, offset)
 	if err != nil {
 		return nil, err
 	}

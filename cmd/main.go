@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"net/http"
 	_ "net/http/pprof"
 
 	server "github.com/dnevsky/http-products"
@@ -22,15 +23,17 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 )
 
 func main() {
 
-	// profiler
-	// go func() {
-	// 	http.ListenAndServe("localhost:8081", nil)
-	// }()
+	// profiler, metrics
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe("localhost:8081", nil)
+	}()
 
 	godotenv.Load(".env")
 	logger, err := zap.NewProduction()
@@ -75,7 +78,8 @@ func main() {
 	// инициализируем кэш (собираем информацию с базы данных)
 	// первый раз мы будем ждать инициализацию базы кэша, что-бы у нас она уже была, а дальше мы в фоне будем обновлять кэш
 	waitFirstCache := make(chan struct{}, 1)
-	go updateCache(sugar, waitFirstCache, updateCacheTime, cache, repository)
+	updateCacheCtx, cancelCacheCtx := context.WithCancel(context.Background())
+	go updateCache(updateCacheCtx, sugar, waitFirstCache, updateCacheTime, cache, repository)
 
 	<-waitFirstCache
 
@@ -83,7 +87,7 @@ func main() {
 
 	go func() {
 		if err := srv.Run(os.Getenv("APP_PORT"), handlers.InitRoutes()); err != nil {
-			sugar.Errorw("error while start http server: %s", err.Error())
+			sugar.Errorf("%s", err.Error())
 		}
 	}()
 
@@ -96,18 +100,28 @@ func main() {
 
 	sugar.Infoln("http-products shutting down")
 
+	cancelCacheCtx()
+
 	if err := srv.Shutdown(context.Background()); err != nil {
 		sugar.Errorw("error while stop server: %s", err.Error())
+	}
+
+	if err := db.Close(); err != nil {
+		sugar.Errorw("error while stop db: %s", err.Error())
+	}
+
+	if err := redis.Close(); err != nil {
+		sugar.Errorw("error while stop redis cache: %s", err.Error())
 	}
 }
 
 // Обновляем кэш. Мы стартуем вечный цикл, в котором пытаемся считать данные из базы данных. Если не получается, то пытаемся через 5 сек
-func updateCache(logger *zap.SugaredLogger, waitFirstCache chan struct{}, updateTimeCache int, cache *cache.Cache, repository *repository.Repository) {
+func updateCache(ctx context.Context, logger *zap.SugaredLogger, waitFirstCache chan struct{}, updateTimeCache int, cache *cache.Cache, repository *repository.Repository) {
 	writeInChannel := false
 
 	for {
 		logger.Infoln("Start update cache...")
-		products, err := repository.Product.GetAll()
+		products, err := repository.Product.GetAll(ctx)
 		if err != nil {
 			logger.Errorw(
 				"error while get update from database & update the cache. Trying after 5 sec...",
@@ -139,7 +153,7 @@ func updateCache(logger *zap.SugaredLogger, waitFirstCache chan struct{}, update
 		// 	data = append(data, p.Id+":"+fmt.Sprint(p.Price))
 		// }
 
-		err = cache.Product.UpdateData(&data)
+		err = cache.Product.UpdateData(ctx, data)
 		if err != nil {
 			logger.Infow(
 				"error while update the cache. Trying after 5 sec...",

@@ -1,6 +1,8 @@
 package cache
 
 import (
+	"context"
+
 	red "github.com/dnevsky/http-products/cache/redis"
 	"github.com/dnevsky/http-products/models"
 	"github.com/go-redis/redis/v8"
@@ -8,9 +10,9 @@ import (
 )
 
 type Product interface {
-	GetWithOffsetFromJSON(limit, offset int) ([]models.Product, error)
+	GetWithOffsetFromJSON(ctx context.Context, limit, offset int) ([]models.Product, error)
 
-	UpdateData(data *[]string) error
+	UpdateData(ctx context.Context, data []string) error
 }
 
 type Cache struct {
