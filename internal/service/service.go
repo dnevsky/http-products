@@ -11,7 +11,7 @@ import (
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
 
 type Product interface {
-	GetAll(ctx context.Context, limit, offset int) ([]models.Product, error)
+	GetAll(ctx context.Context, offset, limit int) ([]models.Product, error)
 }
 
 type Service struct {

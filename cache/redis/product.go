@@ -21,12 +21,13 @@ func NewProductRedis(logger *zap.SugaredLogger, client *redis.Client) *ProductRe
 
 func (c *ProductRedis) GetWithOffsetFromJSON(ctx context.Context, offset, limit int) ([]models.Product, error) {
 	if offset < 0 || limit <= 0 {
-		return nil, errors.New("invalid offset or limit")
+		return nil, errors.New("cache: invalid offset or limit")
 	}
 	products := make([]models.Product, 0, limit)
 
 	res, err := c.client.LRange(ctx, "products", int64(offset), int64(offset+limit-1)).Result()
 	if err != nil {
+		c.logger.Info(res, err)
 		return nil, err
 	}
 

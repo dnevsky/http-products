@@ -17,8 +17,8 @@ func NewProductService(logger *zap.SugaredLogger, cache *cache.Cache) *ProductSe
 	return &ProductService{logger: logger, cache: cache}
 }
 
-func (s *ProductService) GetAll(ctx context.Context, limit, offset int) ([]models.Product, error) {
-	products, err := s.cache.Product.GetWithOffsetFromJSON(ctx, limit, offset)
+func (s *ProductService) GetAll(ctx context.Context, offset, limit int) ([]models.Product, error) {
+	products, err := s.cache.Product.GetWithOffsetFromJSON(ctx, offset, limit)
 	if err != nil {
 		return nil, err
 	}

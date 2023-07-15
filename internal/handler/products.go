@@ -42,7 +42,7 @@ func (h *Handler) getAll(c *gin.Context) {
 	}
 
 	if offset < 0 || limit <= 0 {
-		h.logger.Infow("invalid offset or limit",
+		h.logger.Infow("handler: invalid offset or limit",
 			"offset", offset,
 			"limit", limit,
 		)
@@ -54,7 +54,7 @@ func (h *Handler) getAll(c *gin.Context) {
 		return
 	}
 
-	products, err := h.services.Product.GetAll(c, limit, offset)
+	products, err := h.services.Product.GetAll(c, offset, limit)
 	if err != nil {
 		h.logger.Infow("error while get all products",
 			"products", products, "error", err.Error(),
