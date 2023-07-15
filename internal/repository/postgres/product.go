@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/dnevsky/http-products/models"
@@ -21,7 +22,10 @@ func NewProductPostgres(logger *zap.SugaredLogger, db *sqlx.DB) *ProductPostgres
 	}
 }
 
-func (r *ProductPostgres) GetAllWithOffset(limit, offset int) ([]models.Product, error) {
+func (r *ProductPostgres) GetAllWithOffset(offset, limit int) ([]models.Product, error) {
+	if offset < 0 || limit <= 0 {
+		return nil, errors.New("invalid offset or limit")
+	}
 	var products []models.Product
 
 	// Было бы круто использовать курсор (SELECT * FROM %s WHERE id > $1 ORDER BY id ASC LIMIT $2), но со строками так не получится

@@ -9,8 +9,10 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=cache.go -destination=mocks/mock.go
+
 type Product interface {
-	GetWithOffsetFromJSON(ctx context.Context, limit, offset int) ([]models.Product, error)
+	GetWithOffsetFromJSON(ctx context.Context, offset, limit int) ([]models.Product, error)
 
 	UpdateData(ctx context.Context, data []string) error
 }

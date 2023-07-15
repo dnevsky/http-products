@@ -2,3 +2,5 @@
 .database
 .env
 .cache
+coverage.out
+internal/repository/postgres/product_test

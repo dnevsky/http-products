@@ -8,6 +8,8 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=service.go -destination=mocks/mock.go
+
 type Product interface {
 	GetAll(ctx context.Context, limit, offset int) ([]models.Product, error)
 }

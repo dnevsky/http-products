@@ -9,9 +9,11 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=repository.go -destination=mocks/mock.go
+
 type Product interface {
 	GetAll(ctx context.Context) ([]models.Product, error)
-	GetAllWithOffset(limit, offset int) ([]models.Product, error)
+	GetAllWithOffset(offset, limit int) ([]models.Product, error)
 }
 
 type Repository struct {

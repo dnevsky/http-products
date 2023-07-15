@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"github.com/dnevsky/http-products/models"
 	"github.com/go-redis/redis/v8"
@@ -18,10 +19,13 @@ func NewProductRedis(logger *zap.SugaredLogger, client *redis.Client) *ProductRe
 	return &ProductRedis{logger: logger, client: client}
 }
 
-func (c *ProductRedis) GetWithOffsetFromJSON(ctx context.Context, limit, offset int) ([]models.Product, error) {
+func (c *ProductRedis) GetWithOffsetFromJSON(ctx context.Context, offset, limit int) ([]models.Product, error) {
+	if offset < 0 || limit <= 0 {
+		return nil, errors.New("invalid offset or limit")
+	}
 	products := make([]models.Product, 0, limit)
 
-	res, err := c.client.LRange(ctx, "products", int64(offset), int64(offset+limit)).Result()
+	res, err := c.client.LRange(ctx, "products", int64(offset), int64(offset+limit-1)).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -41,6 +45,9 @@ func (c *ProductRedis) GetWithOffsetFromJSON(ctx context.Context, limit, offset 
 }
 
 func (c *ProductRedis) UpdateData(ctx context.Context, data []string) error {
+	if len(data) == 0 {
+		return errors.New("UpdateData: there's nothing to stuff")
+	}
 
 	pipe := c.client.TxPipeline()
 	defer pipe.Close()

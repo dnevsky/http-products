@@ -78,8 +78,10 @@ func main() {
 	// инициализируем кэш (собираем информацию с базы данных)
 	// первый раз мы будем ждать инициализацию базы кэша, что-бы у нас она уже была, а дальше мы в фоне будем обновлять кэш
 	waitFirstCache := make(chan struct{}, 1)
-	updateCacheCtx, cancelCacheCtx := context.WithCancel(context.Background())
+	updateCacheCtx, cancelCache := context.WithCancel(context.Background())
+
 	go updateCache(updateCacheCtx, sugar, waitFirstCache, updateCacheTime, cache, repository)
+	defer cancelCache()
 
 	<-waitFirstCache
 
@@ -100,9 +102,10 @@ func main() {
 
 	sugar.Infoln("http-products shutting down")
 
-	cancelCacheCtx()
+	stopServerCtx, stopServerCancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer stopServerCancel()
 
-	if err := srv.Shutdown(context.Background()); err != nil {
+	if err := srv.Shutdown(stopServerCtx); err != nil {
 		sugar.Errorw("error while stop server: %s", err.Error())
 	}
 
@@ -120,28 +123,34 @@ func updateCache(ctx context.Context, logger *zap.SugaredLogger, waitFirstCache 
 	writeInChannel := false
 
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
 		logger.Infoln("Start update cache...")
 		products, err := repository.Product.GetAll(ctx)
 		if err != nil {
 			logger.Errorw(
-				"error while get update from database & update the cache. Trying after 5 sec...",
+				"Error while fetching update from the database and updating cache. Retrying after 5 seconds...",
 				"error", err.Error(),
 			)
-			time.Sleep(time.Second * 5)
+			<-time.After(time.Second * 5)
 			continue
 		}
 
 		data := make([]string, 0, len(products))
 
 		// JSON
-		for _, p := range products {
-			r, err := json.Marshal(&p)
+		for k := range products {
+			r, err := json.Marshal(&products[k])
 			if err != nil {
 				logger.Errorw(
-					"error while marshalling data. Trying after 5 sec...",
+					"Error while marshalling data. Retrying after 5 seconds...",
 					"error", err.Error(),
 				)
-				time.Sleep(time.Second * 5)
+				<-time.After(time.Second * 5)
 				continue
 			}
 
@@ -156,10 +165,10 @@ func updateCache(ctx context.Context, logger *zap.SugaredLogger, waitFirstCache 
 		err = cache.Product.UpdateData(ctx, data)
 		if err != nil {
 			logger.Infow(
-				"error while update the cache. Trying after 5 sec...",
+				"Error while updating the cache. Retrying after 5 seconds...",
 				"error", err.Error(),
 			)
-			time.Sleep(time.Second * 5)
+			<-time.After(time.Second * 5)
 			continue
 		}
 
@@ -168,8 +177,8 @@ func updateCache(ctx context.Context, logger *zap.SugaredLogger, waitFirstCache 
 			waitFirstCache <- struct{}{}
 		}
 
-		logger.Infoln("Cache sucefully updated. Sleep...")
+		logger.Infoln("Cache successfully updated. Sleeping...")
 
-		time.Sleep(time.Second * time.Duration(updateTimeCache))
+		<-time.After(time.Second * time.Duration(updateTimeCache))
 	}
 }

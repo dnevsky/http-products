@@ -2,7 +2,7 @@ package redis
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -10,12 +10,17 @@ import (
 func NewRedisCache(cfg *redis.Options) (*redis.Client, error) {
 	cache := redis.NewClient(cfg)
 
-	res, err := cache.Ping(context.Background()).Result()
+	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	// defer cancel()
 
-	fmt.Println(res)
+	res, err := cache.Ping(context.Background()).Result()
 
 	if err != nil {
 		return nil, err
+	}
+
+	if res != "PONG" {
+		return nil, errors.New("failed connect to Redis")
 	}
 
 	return cache, nil

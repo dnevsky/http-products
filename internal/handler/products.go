@@ -19,7 +19,11 @@ func (h *Handler) getAll(c *gin.Context) {
 			"rawlimit", rawLimit,
 			"limit", limit,
 		)
-		newErrorResponse(c, http.StatusBadRequest, "bad data for limit")
+		newErrorResponseJSON(c, http.StatusBadRequest, map[string]interface{}{
+			"message":  "bad data for limit",
+			"rawlimit": rawLimit,
+			"limit":    limit,
+		})
 		return
 	}
 
@@ -29,7 +33,24 @@ func (h *Handler) getAll(c *gin.Context) {
 			"rawoffser", rawOffset,
 			"offset", offset,
 		)
-		newErrorResponse(c, http.StatusBadRequest, "bad data for offset")
+		newErrorResponseJSON(c, http.StatusBadRequest, map[string]interface{}{
+			"message":   "bad data for offset",
+			"rawoffset": rawOffset,
+			"offset":    offset,
+		})
+		return
+	}
+
+	if offset < 0 || limit <= 0 {
+		h.logger.Infow("invalid offset or limit",
+			"offset", offset,
+			"limit", limit,
+		)
+		newErrorResponseJSON(c, http.StatusBadRequest, map[string]interface{}{
+			"message": "invalid offset or limit",
+			"offset":  offset,
+			"limit":   limit,
+		})
 		return
 	}
 
