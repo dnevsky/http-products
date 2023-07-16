@@ -32,7 +32,7 @@ func main() {
 	// profiler, metrics
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		http.ListenAndServe("localhost:8081", nil)
+		http.ListenAndServe(":8081", nil)
 	}()
 
 	godotenv.Load(".env")
@@ -60,14 +60,14 @@ func main() {
 		DB:       redisDB,
 	}
 
-	redis, err := red.NewRedisCache(&cfgRedis)
-	if err != nil {
-		sugar.Errorw("error while init cache: %s", err.Error())
-	}
-
 	db, err := postgres.NewPostgresDB(os.Getenv("DB_URI"))
 	if err != nil {
-		sugar.Errorw("error while init database: %s", err.Error())
+		sugar.Fatalf("error while init database: %s", err.Error())
+	}
+
+	redis, err := red.NewRedisCache(&cfgRedis)
+	if err != nil {
+		sugar.Fatalf("error while init cache: %s", err.Error())
 	}
 
 	cache := cache.NewCache(sugar, redis)
@@ -106,15 +106,15 @@ func main() {
 	defer stopServerCancel()
 
 	if err := srv.Shutdown(stopServerCtx); err != nil {
-		sugar.Errorw("error while stop server: %s", err.Error())
+		sugar.Errorf("error while stop server: %s", err.Error())
 	}
 
 	if err := db.Close(); err != nil {
-		sugar.Errorw("error while stop db: %s", err.Error())
+		sugar.Errorf("error while stop db: %s", err.Error())
 	}
 
 	if err := redis.Close(); err != nil {
-		sugar.Errorw("error while stop redis cache: %s", err.Error())
+		sugar.Errorf("error while stop redis cache: %s", err.Error())
 	}
 }
 

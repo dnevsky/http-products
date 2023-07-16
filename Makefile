@@ -7,11 +7,11 @@ cover:
 	go test -short -count=1 -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out
 
-# build:
-# 	docker build --tag dnevsky/http-products .
+build:
+	docker build --tag dnevsky/http-products .
 
-# run:
-# 	docker-compose up -d dnevsky/http-products
+run:
+	docker-compose up -d http-products
 
 shutdown:
 	docker-compose down
