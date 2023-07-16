@@ -55,19 +55,19 @@ func TestProduct_GetWithOffsetFromJSON(t *testing.T) {
 			name:        "negative offset",
 			limit:       2,
 			offset:      -5,
-			expectedErr: errors.New("invalid offset or limit"),
+			expectedErr: errors.New("cache: invalid offset or limit"),
 		},
 		{
 			name:        "zero limit",
 			limit:       0,
 			offset:      5,
-			expectedErr: errors.New("invalid offset or limit"),
+			expectedErr: errors.New("cache: invalid offset or limit"),
 		},
 		{
 			name:        "negative limit",
 			limit:       -2,
 			offset:      5,
-			expectedErr: errors.New("invalid offset or limit"),
+			expectedErr: errors.New("cache: invalid offset or limit"),
 		},
 	}
 
