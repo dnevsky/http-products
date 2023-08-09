@@ -24,8 +24,8 @@ jobs:
           script: |
             git clone https://github.com/${{ github.repository }}
             cd $REPO_NAME
-            docker login -u ${{ env.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }} ${{ env.REGISTRY }}
-            docker pull ${{ env.REGISTRY }}/${{ env.DOCKER_USERNAME }}/$REPO_NAME:latest
+            docker login -u ${{ github.repository_owner.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }} ${{ github.repository_owner.REGISTRY }}
+            docker pull ${{ github.repository_owner.REGISTRY }}/${{ github.repository_owner.DOCKER_USERNAME }}/$REPO_NAME:latest
             docker-compose down
             docker-compose up -d
             
