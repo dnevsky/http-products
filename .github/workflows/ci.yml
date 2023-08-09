@@ -1,0 +1,40 @@
+name: CI
+run-name: $ACTOR runs test & build & push main
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REPO_NAME: ${{ github.event.repository.name }}
+  ACTOR: ${{ github.actor }}
+
+jobs:
+  test_build_push:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get Dependencies
+        run: go get
+
+      - name: Run Unit Tests
+        run: go test ./...
+
+      - name: Docker login
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
+      - name: Build image
+        run: docker build --file Dockerfile --tag ${{ secrets.DOCKER_USERNAME }}/$REPO_NAME:latest .
+
+      - name: Push image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/$REPO_NAME:latest
+
+
+
+
+    
