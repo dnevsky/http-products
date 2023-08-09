@@ -18,12 +18,12 @@
 ## `.env` переменные:
 
 ```
-DB_URI="postgres://postgres:qwerty@127.0.0.1:5432/testdb?sslmode=disable"
+DB_URI="postgres://postgres:qwerty@postgres:5432/testdb?sslmode=disable"
 
 APP_PORT = "5000"
 APP_CACHE_UPDATE = 15
 
-REDIS_ADDR="localhost:6379"
+REDIS_ADDR="redis:6379"
 REDIS_PASSWD="asdzxc"
 REDIS_DB=0
 
