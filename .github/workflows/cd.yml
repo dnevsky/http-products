@@ -22,8 +22,10 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           script: |
-            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }} ${{ secrets.REGISTRY }}
-            docker pull ${{ secrets.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/$REPO_NAME:latest
+            git clone https://github.com/${{ github.repository }}
+            cd $REPO_NAME
+            docker login -u ${{ env.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }} ${{ env.REGISTRY }}
+            docker pull ${{ env.REGISTRY }}/${{ env.DOCKER_USERNAME }}/$REPO_NAME:latest
             docker-compose down
             docker-compose up -d
             
