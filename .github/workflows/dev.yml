@@ -1,8 +1,6 @@
 name: Dev
 run-name: ${{ github.actor }} runs deploy dev
 on:
-  merge:
-    branches: [dev]
   push:
     branches: [dev]
 jobs:
