@@ -1,5 +1,5 @@
 name: CI
-run-name: $ACTOR runs test & build & push main
+run-name: ${{ github.actor }} runs test & build & push main
 
 on:
   push:
@@ -13,10 +13,7 @@ jobs:
   test_build_push:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Get Dependencies
-        run: go get
+      - uses: actions/checkout@v
 
       - name: Run Unit Tests
         run: go test ./...
