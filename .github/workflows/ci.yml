@@ -43,6 +43,7 @@ jobs:
           script: |
             rm -rf ${{ env.REPO_NAME }}
             git clone https://github.com/${{ github.repository }}
+            cp .env ${{ env.REPO_NAME }}/
             cd ${{ env.REPO_NAME }}
             docker login -u ${{ vars.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }} ${{ vars.REGISTRY }}
             docker pull ${{ vars.REGISTRY }}/${{ vars.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:latest

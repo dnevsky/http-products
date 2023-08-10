@@ -1,6 +1,7 @@
 .vs
 .database
 .env
+.env.production
 .cache
 coverage.out
 internal/repository/postgres/product_test
