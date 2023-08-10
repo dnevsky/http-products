@@ -18,7 +18,7 @@ COPY --from=builder /app/http-products /app/http-products
 
 WORKDIR /app
 
-EXPOSE 5000
+EXPOSE 5001
 EXPOSE 8081
 
 CMD ["./http-products"]
