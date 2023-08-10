@@ -31,6 +31,25 @@ jobs:
       - name: Push image
         run: docker push ${{ vars.DOCKER_USERNAME }}/$REPO_NAME:latest
 
+  deploy:
+    needs: test_build_push
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            rm -rf $REPO_NAME
+            git clone https://github.com/${{ github.repository }}
+            cd $REPO_NAME
+            docker login -u ${{ vars.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }} ${{ vars.REGISTRY }}
+            docker pull ${{ vars.REGISTRY }}/${{ vars.DOCKER_USERNAME }}/$REPO_NAME:latest
+            docker-compose down
+            docker-compose up -d
+
 
 
 
