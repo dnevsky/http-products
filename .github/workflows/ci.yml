@@ -1,5 +1,5 @@
 name: CI
-run-name: ${{ github.actor }} runs test & build & push main
+run-name: ${{ github.actor }} runs test & build & push main & deploy
 
 on:
   push:
@@ -7,7 +7,6 @@ on:
 
 env:
   REPO_NAME: ${{ github.event.repository.name }}
-  ACTOR: ${{ github.actor }}
 
 jobs:
   test_build_push:
@@ -26,10 +25,10 @@ jobs:
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Build image
-        run: docker build --file Dockerfile --tag ${{ vars.DOCKER_USERNAME }}/$REPO_NAME:latest .
+        run: docker build --file Dockerfile --tag ${{ vars.DOCKER_USERNAME }}/{{ $env.REPO_NAME }}:latest .
 
       - name: Push image
-        run: docker push ${{ vars.DOCKER_USERNAME }}/$REPO_NAME:latest
+        run: docker push ${{ vars.DOCKER_USERNAME }}/{{ $env.REPO_NAME }}:latest
 
   deploy:
     needs: test_build_push
@@ -42,11 +41,11 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           script: |
-            rm -rf $REPO_NAME
+            rm -rf {{ $env.REPO_NAME }}
             git clone https://github.com/${{ github.repository }}
-            cd $REPO_NAME
+            cd {{ $env.REPO_NAME }}
             docker login -u ${{ vars.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }} ${{ vars.REGISTRY }}
-            docker pull ${{ vars.REGISTRY }}/${{ vars.DOCKER_USERNAME }}/$REPO_NAME:latest
+            docker pull ${{ vars.REGISTRY }}/${{ vars.DOCKER_USERNAME }}/{{ $env.REPO_NAME }}:latest
             docker-compose down
             docker-compose up -d
 
