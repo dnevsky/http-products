@@ -15,7 +15,7 @@ services:
       redis:
         condition: service_healthy
     ports:
-      - "5000:5000"
+      - "5001:5001"
       - "8081:8081"
 
   postgres:
@@ -27,7 +27,7 @@ services:
     volumes:
       - ../.database/postgres/data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5432:54321"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 3s
@@ -41,7 +41,7 @@ services:
     volumes:
     - ../.cache/:/data
     ports:
-    - "6379:6379"
+    - "6379:63798"
     command: redis-server --save 20 1 --loglevel warning --requirepass asdzxc
     healthcheck:
       test: ["CMD-SHELL", "redis-cli", "ping"]
